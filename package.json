@@ -12,6 +12,7 @@
   "description": "",
   "dependencies": {
     "@types/smtp-server": "^3.5.10",
+    "mailparser": "^3.7.2",
     "nodemon": "^3.1.9",
     "smtp-server": "^3.13.6"
   }
