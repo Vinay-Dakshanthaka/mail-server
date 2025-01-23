@@ -37,6 +37,15 @@ const server = new SMTPServer({
             console.log(`Text Body: ${parsed.text}`);
             console.log(`HTML Body: ${parsed.html}`);
 
+            // Directory to store attachments
+            const uploadDir = path.join(__dirname, "uploads");
+
+            // Ensure the uploads directory exists
+            if (!fs.existsSync(uploadDir)) {
+                fs.mkdirSync(uploadDir, { recursive: true });
+                console.log(`Created directory: ${uploadDir}`);
+            }
+
             // Process attachments
             if (parsed.attachments && parsed.attachments.length > 0) {
                 console.log("Attachments found:", parsed.attachments.length);
@@ -44,8 +53,7 @@ const server = new SMTPServer({
                 // Save attachments
                 parsed.attachments.forEach((attachment, index) => {
                     const filePath = path.join(
-                        __dirname,
-                        "uploads",
+                        uploadDir,
                         `${Date.now()}_${attachment.filename}`
                     );
                     fs.writeFile(filePath, attachment.content, (err) => {
@@ -65,6 +73,7 @@ const server = new SMTPServer({
     }
 });
 
+// Start the SMTP server
 server.listen(25, () => {
     console.log("Server Running on port 25");
 });
