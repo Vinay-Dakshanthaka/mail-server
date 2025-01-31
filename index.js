@@ -280,7 +280,7 @@ const isValidEmailDomain = (domain, callback) => {
 const server = new SMTPServer({
     // secure: true, // 🔒 Enable TLS
     secure: false, // 🔒 Enable TLS
-    allowInsecureAuth: false, // 🔒 Disable insecure authentication
+    allowInsecureAuth: true, // 🔒 Disable insecure authentication
     authOptional: false, // 🔒 Require authentication
     size: MAX_EMAIL_SIZE, // 📌 Limit email size
 
