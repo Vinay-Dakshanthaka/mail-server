@@ -281,7 +281,7 @@ const server = new SMTPServer({
     // secure: true, // 🔒 Enable TLS
     secure: false, // 🔒 Enable TLS
     allowInsecureAuth: true, // 🔒 Disable insecure authentication
-    authOptional: false, // 🔒 Require authentication
+    authOptional: true, // 🔒 Require authentication
     size: MAX_EMAIL_SIZE, // 📌 Limit email size
 
     // 🔑 Load SSL/TLS certificates
