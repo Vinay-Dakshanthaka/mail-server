@@ -399,7 +399,7 @@ const server = new SMTPServer({
     },
 });
 
-// 🚀 Start SMTP Server on Port 587 (Recommended for TLS)
-server.listen(587, () => {
-    console.log("🚀 Secure SMTP Server Running on Port 587");
+// 🚀 Start SMTP Server on Port 25 (Recommended for TLS)
+server.listen(25, () => {
+    console.log("🚀 Secure SMTP Server Running on Port 25");
 });
