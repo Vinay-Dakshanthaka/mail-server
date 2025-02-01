@@ -403,7 +403,7 @@ const server = new SMTPServer({
 
 // SMTP Server Configurations
 const transporter = nodemailer.createTransport({
-    host: 'localhost',    // Assuming SMTP server is running locally
+    host: 'mail.totfd.fun',    // Assuming SMTP server is running locally
     port: 25,            // Use the same port as your SMTP server (Port 25)
     secure: false,       // Set to false if not using TLS
     tls: {
