@@ -246,6 +246,7 @@
 
 const SMTPServer = require("smtp-server").SMTPServer;
 const { simpleParser } = require("mailparser");
+const nodemailer = require('nodemailer');
 const fs = require("fs");
 const path = require("path");
 const dns = require("dns");
@@ -398,6 +399,57 @@ const server = new SMTPServer({
         });
     },
 });
+
+
+// SMTP Server Configurations
+const transporter = nodemailer.createTransport({
+    host: 'localhost',    // Assuming SMTP server is running locally
+    port: 25,            // Use the same port as your SMTP server (Port 25)
+    secure: false,       // Set to false if not using TLS
+    tls: {
+        rejectUnauthorized: false   // Important if you're using self-signed certificates
+    }
+});
+
+// Function to send an email
+const sendEmail = async (from, to, subject, text, html, attachments) => {
+    const mailOptions = {
+        from: from,       // Sender's email address
+        to: to,           // Recipient's email address
+        subject: subject, // Subject of the email
+        text: text,       // Plain text body
+        html: html,       // HTML body
+        attachments: attachments  // Attachments array (if any)
+    };
+
+    try {
+        const info = await transporter.sendMail(mailOptions);
+        console.log("✅ Email sent: %s", info.messageId);
+    } catch (error) {
+        console.error("❌ Error sending email:", error);
+    }
+};
+
+// Example usage
+const from = 'support@totfd.fun';
+const to = 'vinayd098@gmail.com';
+const subject = 'Test Email Subject';
+const text = 'This is a plain text body of the email';
+const html = '<p>This is an HTML body of the email</p>';
+const attachments = [
+    {
+        filename: 'testfile.txt',
+        content: 'Hello world!', // File content as string (use Buffer for binary data)
+    }
+];
+
+// Send the email
+try {
+    sendEmail(from, to, subject, text, html);
+} catch (error) {
+    console.log(error)   
+}
+
 
 // 🚀 Start SMTP Server on Port 25 (Recommended for TLS)
 server.listen(25, () => {
