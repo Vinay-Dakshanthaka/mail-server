@@ -267,85 +267,89 @@ const allowedDomains = [
 const MAX_EMAIL_SIZE = 10 * 1024 * 1024;
 
 // 🚀 Start SMTP Server
-const server = new SMTPServer({
-    secure: true,  // 🔒 Enable TLS
-    authOptional: false, // ✅ Require authentication
-    size: MAX_EMAIL_SIZE, 
-
-    // 🔑 Load SSL/TLS Certificates
-    key: fs.readFileSync(path.join(__dirname, "ssl", "server.key")),
-    cert: fs.readFileSync(path.join(__dirname, "ssl", "server.crt")),
-
-    // ✅ Handle Authentication
-    onAuth(auth, session, cb) {
-        console.log(`🔐 Authentication attempt from: ${auth.username}`);
-        if (auth.username === "admin@totfd.fun" && auth.password === "your-secure-password") {
-            cb(null, { user: auth.username });
-        } else {
-            return cb(new Error("🚫 Authentication failed"));
-        }
-    },
-
-    // ✅ Validate Sender Email
-    onMailFrom(address, session, cb) {
-        console.log(`📩 Email From: ${address.address}`);
-        if (blockedEmails.includes(address.address)) {
-            return cb(new Error("Unauthorized sender"));
-        }
-
-        const domain = address.address.split("@")[1];
-        isValidEmailDomain(domain, (isValid) => {
-            if (!isValid) {
-                return cb(new Error("Unauthorized domain"));
+try {
+    const server = new SMTPServer({
+        secure: true,  // 🔒 Enable TLS
+        authOptional: false, // ✅ Require authentication
+        size: MAX_EMAIL_SIZE, 
+    
+        // 🔑 Load SSL/TLS Certificates
+        key: fs.readFileSync(path.join(__dirname, "ssl", "server.key")),
+        cert: fs.readFileSync(path.join(__dirname, "ssl", "server.crt")),
+    
+        // ✅ Handle Authentication
+        onAuth(auth, session, cb) {
+            console.log(`🔐 Authentication attempt from: ${auth.username}`);
+            if (auth.username === "admin@totfd.fun" && auth.password === "your-secure-password") {
+                cb(null, { user: auth.username });
+            } else {
+                return cb(new Error("🚫 Authentication failed"));
             }
-            cb();
-        });
-    },
-
-    // ✅ Validate Recipient Email
-    onRcptTo(address, session, cb) {
-        console.log(`📥 Email To: ${address.address}`);
-        const domain = address.address.split("@")[1];
-        dns.resolveMx(domain, (err, addresses) => {
-            if (err || addresses.length === 0) {
-                return cb(new Error("Invalid recipient domain"));
+        },
+    
+        // ✅ Validate Sender Email
+        onMailFrom(address, session, cb) {
+            console.log(`📩 Email From: ${address.address}`);
+            if (blockedEmails.includes(address.address)) {
+                return cb(new Error("Unauthorized sender"));
             }
-            cb();
-        });
-    },
-
-    // 📩 Process Email Data
-    onData(stream, session, cb) {
-        let emailSize = 0;
-        stream.on("data", (chunk) => {
-            emailSize += chunk.length;
-            if (emailSize > MAX_EMAIL_SIZE) {
-                stream.destroy();
-                return cb(new Error("Email too large"));
-            }
-        });
-
-        simpleParser(stream, async (err, parsed) => {
-            if (err) {
-                return cb(err);
-            }
-            if (!parsed.subject || (!parsed.text && !parsed.html)) {
-                return cb(new Error("Email missing subject or body"));
-            }
-
-            console.log(`📜 Subject: ${parsed.subject}`);
-            console.log(`👤 From: ${parsed.from.text}`);
-            console.log(`📧 To: ${parsed.to.text}`);
-
-            cb(); 
-        });
-    },
-});
+    
+            const domain = address.address.split("@")[1];
+            isValidEmailDomain(domain, (isValid) => {
+                if (!isValid) {
+                    return cb(new Error("Unauthorized domain"));
+                }
+                cb();
+            });
+        },
+    
+        // ✅ Validate Recipient Email
+        onRcptTo(address, session, cb) {
+            console.log(`📥 Email To: ${address.address}`);
+            const domain = address.address.split("@")[1];
+            dns.resolveMx(domain, (err, addresses) => {
+                if (err || addresses.length === 0) {
+                    return cb(new Error("Invalid recipient domain"));
+                }
+                cb();
+            });
+        },
+    
+        // 📩 Process Email Data
+        onData(stream, session, cb) {
+            let emailSize = 0;
+            stream.on("data", (chunk) => {
+                emailSize += chunk.length;
+                if (emailSize > MAX_EMAIL_SIZE) {
+                    stream.destroy();
+                    return cb(new Error("Email too large"));
+                }
+            });
+    
+            simpleParser(stream, async (err, parsed) => {
+                if (err) {
+                    return cb(err);
+                }
+                if (!parsed.subject || (!parsed.text && !parsed.html)) {
+                    return cb(new Error("Email missing subject or body"));
+                }
+    
+                console.log(`📜 Subject: ${parsed.subject}`);
+                console.log(`👤 From: ${parsed.from.text}`);
+                console.log(`📧 To: ${parsed.to.text}`);
+    
+                cb(); 
+            });
+        },
+    });
+} catch (error) {
+    console.log("=-=-=-=-=-=-=",error)
+}
 
 try {
     testEmail();
 } catch (error) {
-    console.error(error)
+    console.error("error while sending message : ",error)
 }
 
 server.listen(25, () => {
